@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISO27001 取號系統</title>
+    <title>ISO27001 取號管理系統</title>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --success-color: #27ae60;
-            --error-color: #e74c3c;
+            --primary-bg: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --accent: #3498db;
+            --danger: #e74c3c;
+            --border: #dcdde1;
         }
 
         body {
-            font-family: "Microsoft JhengHei", -apple-system, sans-serif;
-            background-color: #f0f2f5;
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--primary-bg);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -22,69 +24,95 @@
             margin: 0;
         }
 
-        .card {
-            background: white;
+        .container {
+            background: var(--card-bg);
             padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 350px;
+            max-width: 380px;
+            text-align: center;
         }
 
-        h2 {
-            color: var(--primary-color);
-            margin-top: 0;
-            font-size: 1.5rem;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 1rem;
+        .header {
+            margin-bottom: 2rem;
         }
 
-        .system-label {
-            font-size: 0.8rem;
+        .header h2 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.6rem;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            font-size: 0.85rem;
             color: #7f8c8d;
-            margin-bottom: 0.5rem;
-            display: block;
+            margin-top: 0.5rem;
+        }
+
+        /* 顯示號碼的區域 */
+        .number-display {
+            background: #fdfdfd;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         #result {
             font-size: 3.5rem;
-            font-weight: 800;
-            color: var(--error-color);
-            margin: 1.5rem 0;
+            font-weight: 900;
+            color: var(--danger);
             font-family: 'Courier New', Courier, monospace;
-            letter-spacing: 2px;
+            display: block;
+            min-height: 4.5rem;
+            line-height: 4.5rem;
         }
 
+        /* 輸入框樣式 */
         .input-group {
-            margin-bottom: 1.5rem;
+            text-align: left;
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+            color: var(--text-main);
+            font-weight: bold;
         }
 
         input {
-            width: 90%;
-            padding: 12px;
-            border: 2px solid #ddd;
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 1rem;
-            transition: border-color 0.3s;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
         }
 
         input:focus {
             outline: none;
-            border-color: var(--accent-color);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
+        /* 按鈕樣式 */
         button {
             width: 100%;
-            padding: 14px;
-            background-color: var(--accent-color);
+            padding: 15px;
+            background-color: var(--accent);
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.1s, background-color 0.3s;
+            transition: background 0.3s ease, transform 0.1s;
+            margin-top: 1rem;
         }
 
         button:hover {
@@ -100,102 +128,101 @@
             cursor: not-allowed;
         }
 
-        .footer-note {
-            margin-top: 1.5rem;
-            font-size: 0.75rem;
+        .status-msg {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            height: 1.2rem;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.7rem;
             color: #bdc3c7;
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <span class="system-label">Internal Documentation Control</span>
+<div class="container">
+    <div class="header">
         <h2>ISO27001 取號系統</h2>
-        
-        <div id="result">----</div>
-        
-        <div class="input-group">
-            <input type="text" id="userName" placeholder="請輸入承辦人姓名" autocomplete="off">
-        </div>
-
-        <button id="btn" onclick="takeNumber()">立即取號</button>
-
-        <p class="footer-note">系統將自動記錄至後端資料庫</p>
+        <p>請登入帳案以完成文件編號程序</p>
     </div>
 
-    <script>
-        // ★ 重點：請在此處替換成你部署 GAS 後得到的 URL ★
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwjkO-6_ha3-o9Vwk33F2tRpXDVrKZ6j1gAdjAJilS4hVKv08O6_ooPT36EoaY9Iw0m/exec'; 
+    <div class="number-display">
+        <span id="result">----</span>
+    </div>
 
-        async function takeNumber() {
-            const userInput = document.getElementById('userName');
-            const resultDiv = document.getElementById('result');
-            const btn = document.getElementById('btn');
+    <div class="input-group">
+        <label for="account">帳號</label>
+        <input type="text" id="account" placeholder="請輸入使用者帳號" autocomplete="username">
+    </div>
 
-            // 1. 檢查輸入
-            const name = userInput.value.trim();
-            if (!name) {
-                alert("請填寫承辦人姓名，以利稽核追蹤。");
-                userInput.focus();
-                return;
-            }
+    <div class="input-group">
+        <label for="password">密碼</label>
+        <input type="password" id="password" placeholder="請輸入登入密碼" autocomplete="current-password">
+    </div>
 
-            // 2. 準備取號狀態
-            btn.disabled = true;
-            const originalBtnText = btn.innerText;
-            btn.innerText = "通訊中...";
-            resultDiv.style.color = "#bdc3c7";
-            resultDiv.innerText = "WAIT";
+    <button id="submitBtn" onclick="takeNumber()">執行取號</button>
 
-            try {
-                // 3. 呼叫 GAS API
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // 如果遇到跨網域問題可保留，但正常部署建議使用標準 fetch
-                    body: JSON.stringify({ userName: name }),
-                    headers: {
-                        'Content-Type': 'text/plain' // GAS 接收 JSON 時有時用 text/plain 較穩
-                    }
-                });
+    <div id="statusMsg" class="status-msg"></div>
 
-                // 注意：由於 Google Redirect 機制，有時 fetch 無法直接取得 json
-                // 建議使用以下方式處理
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ userName: name })
-                });
-                
-                const data = await res.json();
+    <div class="footer">
+        © 2026 IT Infrastructure Security Management
+    </div>
+</div>
 
-                if (data.success) {
-                    // 4. 取號成功
-                    resultDiv.style.color = "var(--error-color)";
-                    resultDiv.innerText = data.number;
-                    userInput.value = ""; // 清空輸入框
-                    console.log("取號成功：" + data.number);
-                } else {
-                    throw new Error(data.error);
-                }
+<script>
+    // ★ 請在此替換為您的 GAS 部署網址 ★
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwjkO-6_ha3-o9Vwk33F2tRpXDVrKZ6j1gAdjAJilS4hVKv08O6_ooPT36EoaY9Iw0m/exec';
 
-            } catch (e) {
-                console.error(e);
-                alert("取號失敗！系統提示：" + e.message);
-                resultDiv.innerText = "ERR";
-                resultDiv.style.color = "var(--error-color)";
-            } finally {
-                // 5. 恢復按鈕
-                btn.disabled = false;
-                btn.innerText = originalBtnText;
-            }
+    async function takeNumber() {
+        const accField = document.getElementById('account');
+        const pwdField = document.getElementById('password');
+        const btn = document.getElementById('submitBtn');
+        const resultDiv = document.getElementById('result');
+        const statusMsg = document.getElementById('statusMsg');
+
+        const account = accField.value.trim();
+        const password = pwdField.value.trim();
+
+        // 1. 簡易前端驗證
+        if (!account || !password) {
+            alert("請完整輸入帳號與密碼！");
+            return;
         }
 
-        // 支援按下 Enter 鍵直接取號
-        document.getElementById('userName').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                takeNumber();
+        // 2. UI 狀態切換（防止重複送出）
+        btn.disabled = true;
+        btn.innerText = "驗證中...";
+        resultDiv.innerText = "....";
+        statusMsg.innerText = "正在連線至安全性伺服器...";
+        statusMsg.style.color = "#7f8c8d";
+
+        try {
+            // 3. 發送請求至 GAS
+            const response = await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    account: account,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // 4. 取號成功邏輯
+                resultDiv.innerText = data.number;
+                statusMsg.innerText = "取號成功！已存入資料庫。";
+                statusMsg.style.color = "#27ae60";
+                pwdField.value = ""; // 安全起見，清空密碼框
+            } else {
+                // 5. 後端回傳失敗（例如密碼錯）
+                throw new Error(data.error);
             }
-        });
-    </script>
-</body>
-</html>
+
+        } catch (error) {
+            console.error(error);
+            resultDiv.innerText = "FAIL";
+            status
