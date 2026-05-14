@@ -1,250 +1,450 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISO27001 取號管理系統</title>
-    <style>
-        :root {
-            --primary-bg: #f4f7f9;
-            --card-bg: #ffffff;
-            --text-main: #2c3e50;
-            --accent: #3498db;
-            --danger: #e74c3c;
-            --border: #dcdde1;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISO27001 取號管理系統</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
 
-        body {
-            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--primary-bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --accent: #4f8ef7;
+      --accent-dim: rgba(79,142,247,0.12);
+      --danger: #f75c5c;
+      --success: #4fcf8e;
+      --text: #e8eaf0;
+      --muted: #5a5f7a;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'Noto Sans TC', sans-serif;
+    }
 
-        .container {
-            background: var(--card-bg);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .header {
-            margin-bottom: 2rem;
-        }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      /* subtle grid texture */
+      background-image:
+        linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
 
-        .header h2 {
-            margin: 0;
-            color: var(--text-main);
-            font-size: 1.6rem;
-            letter-spacing: 1px;
-        }
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 400px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    }
 
-        .header p {
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            margin-top: 0.5rem;
-        }
+    .card-header {
+      padding: 1.5rem 2rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
 
-        /* 顯示號碼的區域 */
-        .number-display {
-            background: #fdfdfd;
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
+    .shield {
+      width: 36px; height: 36px;
+      background: var(--accent-dim);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
 
-        #result {
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: var(--danger);
-            font-family: 'Courier New', Courier, monospace;
-            display: block;
-            min-height: 4.5rem;
-            line-height: 4.5rem;
-        }
+    .card-header h1 {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      line-height: 1.3;
+    }
 
-        /* 輸入框樣式 */
-        .input-group {
-            text-align: left;
-            margin-bottom: 1.2rem;
-        }
+    .card-header p {
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-top: 2px;
+    }
 
-        label {
-            display: block;
-            font-size: 0.9rem;
-            margin-bottom: 0.4rem;
-            color: var(--text-main);
-            font-weight: bold;
-        }
+    .card-body { padding: 2rem; }
 
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-        }
+    /* ── Screen switching ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
 
-        input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
+    /* ── Inputs ── */
+    .field { margin-bottom: 1.2rem; }
 
-        /* 按鈕樣式 */
-        button {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.1s;
-            margin-top: 1rem;
-        }
+    label {
+      display: block;
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
 
-        button:hover {
-            background-color: #2980b9;
-        }
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
 
-        button:active {
-            transform: scale(0.98);
-        }
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,142,247,0.15);
+    }
 
-        button:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-        }
+    /* ── Buttons ── */
+    .btn {
+      width: 100%;
+      padding: 0.85rem;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 0.5rem;
+    }
 
-        .status-msg {
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            height: 1.2rem;
-        }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .footer {
-            margin-top: 2rem;
-            font-size: 0.7rem;
-            color: #bdc3c7;
-        }
-    </style>
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Status bar ── */
+    .status {
+      min-height: 1.4rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      margin-top: 1rem;
+      text-align: center;
+      transition: color 0.3s;
+    }
+
+    /* ── Number display panel ── */
+    .num-panel {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .num-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .num-value {
+      font-family: var(--mono);
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    .num-value.current { color: var(--muted); }
+    .num-value.preview { color: var(--accent); }
+    .num-value.issued  { color: var(--success); }
+
+    .num-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1rem 0;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .info-row span:last-child { color: var(--text); }
+
+    /* ── Confirm badge ── */
+    .issued-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(79,207,142,0.1);
+      border: 1px solid rgba(79,207,142,0.3);
+      border-radius: 20px;
+      padding: 0.3rem 0.9rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--success);
+      margin-top: 0.75rem;
+    }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h2>ISO27001 取號系統</h2>
-        <p>請登入帳案以完成文件編號程序</p>
+<div class="card">
+  <div class="card-header">
+    <div class="shield">🔐</div>
+    <div>
+      <h1>ISO 27001 取號管理系統</h1>
+      <p>Document Number Management System</p>
+    </div>
+  </div>
+
+  <div class="card-body">
+
+    <!-- ══ 畫面 A：登入 ══ -->
+    <div id="screenLogin" class="screen active">
+      <div class="field">
+        <label>帳號 Account</label>
+        <input id="account" type="text" placeholder="輸入使用者帳號" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>密碼 Password</label>
+        <input id="password" type="password" placeholder="輸入登入密碼" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">驗證登入</button>
+      <div id="loginStatus" class="status"></div>
     </div>
 
-    <div class="number-display">
-        <span id="result">----</span>
+    <!-- ══ 畫面 B：取號 ══ -->
+    <div id="screenTake" class="screen">
+      <div class="num-panel">
+        <div class="num-label">目前最新編號</div>
+        <div id="currentNum" class="num-value current">---</div>
+        <hr class="num-divider">
+        <div class="num-label">取號後將產生</div>
+        <div id="previewNum" class="num-value preview">---</div>
+      </div>
+
+      <div class="info-row">
+        <span>登入帳號</span>
+        <span id="infoAccount">—</span>
+      </div>
+      <div class="info-row">
+        <span>機密等級</span>
+        <span id="infoLevel">G</span>
+      </div>
+
+      <button class="btn btn-primary" id="takeBtn" onclick="doTake()">✦ 確認取號</button>
+      <button class="btn btn-ghost" id="logoutBtn" onclick="doLogout()">重新登入</button>
+
+      <div id="takeStatus" class="status"></div>
     </div>
 
-    <div class="input-group">
-        <label for="account">帳號</label>
-        <input type="text" id="account" placeholder="請輸入使用者帳號" autocomplete="username">
+    <!-- ══ 畫面 C：取號成功 ══ -->
+    <div id="screenDone" class="screen">
+      <div class="num-panel">
+        <div class="num-label">本次取得編號</div>
+        <div id="issuedNum" class="num-value issued">---</div>
+        <div class="issued-badge"><div class="dot"></div>已寫入資料庫</div>
+        <hr class="num-divider">
+        <div class="num-label">上一筆編號</div>
+        <div id="lastNum" class="num-value current" style="font-size:1.4rem">---</div>
+      </div>
+
+      <div class="info-row">
+        <span>取號時間</span>
+        <span id="infoDoneTime">—</span>
+      </div>
+
+      <button class="btn btn-primary" onclick="doNewTake()">繼續取號</button>
+      <button class="btn btn-ghost" onclick="doLogout()">登出</button>
     </div>
 
-    <div class="input-group">
-        <label for="password">密碼</label>
-        <input type="password" id="password" placeholder="請輸入登入密碼" autocomplete="current-password">
-    </div>
-
-    <button id="submitBtn" onclick="takeNumber()">執行取號</button>
-
-    <div id="statusMsg" class="status-msg"></div>
-
-    <div class="footer">
-        © 2026 IT Infrastructure Security Management
-    </div>
+  </div><!-- /card-body -->
 </div>
 
 <script>
-    // ==========================================
-    // ★ 請在下方引號中間貼上您的 GAS 部署網址 ★
-    // 注意：絕對不要刪掉頭尾的單引號！
-    // ==========================================
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxPuz9gwY0hQRIHxKzWWfwpXe-D3P220JPC1mQQJfrcEIzLGR60amsLydP-Gbgg0Cfs/exec';
+  // ★ 請貼上您的 GAS 部署網址 ★
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyphoe0I7PZ3pb8vkdhZEMh3Uumg5K1TqWk6ROzPaitRY-Pjkts-NoD2d6QwkG_qakr/exec';
 
-    async function takeNumber() {
-        const accField = document.getElementById('account');
-        const pwdField = document.getElementById('password');
-        const btn = document.getElementById('submitBtn');
-        const resultDiv = document.getElementById('result');
-        const statusMsg = document.getElementById('statusMsg');
+  // 儲存登入資訊
+  let session = { account: '', password: '', level: 'G' };
 
-        const account = accField.value.trim();
-        const password = pwdField.value.trim();
+  /* ── 切換畫面 ── */
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
 
-        if (!account || !password) {
-            alert("請完整輸入帳號與密碼！");
-            return;
-        }
+  /* ── 共用 POST ── */
+  async function callGAS(payload) {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
 
-        // 按鈕切換為驗證中狀態，防止重複點擊
-        btn.disabled = true;
-        btn.innerText = "驗證中...";
-        resultDiv.innerText = "....";
-        statusMsg.innerText = "正在連線至安全性伺服器...";
-        statusMsg.style.color = "#7f8c8d";
+  /* ── 設定狀態文字 ── */
+  function setStatus(elId, msg, color) {
+    const el = document.getElementById(elId);
+    el.textContent = msg;
+    el.style.color = color || '#5a5f7a';
+  }
 
-        try {
-            const response = await fetch(GAS_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8',
-                },
-                body: JSON.stringify({
-                    account: account,
-                    password: password
-                })
-            });
+  /* ══ 登入 ══ */
+  async function doLogin() {
+    const account  = document.getElementById('account').value.trim();
+    const password = document.getElementById('password').value.trim();
 
-            const data = await response.json();
-
-            if (data.success) {
-                // 取號成功
-                resultDiv.innerText = data.number;
-                statusMsg.innerText = "取號成功！已存入資料庫。";
-                statusMsg.style.color = "#27ae60";
-                pwdField.value = ""; // 清空密碼框
-            } else {
-                // 帳號密碼錯誤或其他後端錯誤
-                throw new Error(data.error);
-            }
-
-        } catch (error) {
-            console.error(error);
-            resultDiv.innerText = "FAIL";
-            statusMsg.innerText = "錯誤: " + error.message;
-            statusMsg.style.color = "#e74c3c";
-        } finally {
-            // 恢復按鈕狀態
-            btn.disabled = false;
-            btn.innerText = "執行取號";
-        }
+    if (!account || !password) {
+      setStatus('loginStatus', '請完整輸入帳號與密碼', '#f75c5c');
+      return;
     }
 
-    // 支援按下 Enter 鍵直接執行
-    document.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            takeNumber();
-        }
-    });
-</script>
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.textContent = '驗證中...';
+    setStatus('loginStatus', '正在連線...', '#5a5f7a');
 
+    try {
+      const data = await callGAS({ account, password, action: 'login' });
+
+      if (data.success) {
+        // 儲存 session
+        session.account  = account;
+        session.password = password;
+
+        // 填入取號畫面資料
+        document.getElementById('currentNum').textContent  = data.currentCode || '---';
+        document.getElementById('previewNum').textContent  = data.nextPreview  || '---';
+        document.getElementById('infoAccount').textContent = account;
+        document.getElementById('infoLevel').textContent   = session.level;
+
+        setStatus('loginStatus', '', '');
+        showScreen('screenTake');
+      } else {
+        setStatus('loginStatus', '✕ ' + data.error, '#f75c5c');
+      }
+    } catch (err) {
+      setStatus('loginStatus', '連線失敗：' + err.message, '#f75c5c');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '驗證登入';
+    }
+  }
+
+  /* ══ 取號 ══ */
+  async function doTake() {
+    const btn = document.getElementById('takeBtn');
+    btn.disabled = true;
+    btn.textContent = '取號中...';
+    setStatus('takeStatus', '正在寫入資料庫...', '#5a5f7a');
+
+    try {
+      const data = await callGAS({
+        account:  session.account,
+        password: session.password,
+        level:    session.level,
+        action:   'take'
+      });
+
+      if (data.success) {
+        document.getElementById('issuedNum').textContent  = data.number;
+        document.getElementById('lastNum').textContent    = data.lastNumber;
+        document.getElementById('infoDoneTime').textContent =
+          new Date().toLocaleString('zh-TW', { hour12: false });
+
+        setStatus('takeStatus', '', '');
+        showScreen('screenDone');
+      } else {
+        setStatus('takeStatus', '✕ ' + data.error, '#f75c5c');
+      }
+    } catch (err) {
+      setStatus('takeStatus', '連線失敗：' + err.message, '#f75c5c');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✦ 確認取號';
+    }
+  }
+
+  /* ══ 繼續取號（回取號畫面，刷新預覽）══ */
+  async function doNewTake() {
+    showScreen('screenTake');
+    setStatus('takeStatus', '刷新最新號碼中...', '#5a5f7a');
+
+    try {
+      const data = await callGAS({
+        account:  session.account,
+        password: session.password,
+        action:   'login'
+      });
+      if (data.success) {
+        document.getElementById('currentNum').textContent = data.currentCode;
+        document.getElementById('previewNum').textContent = data.nextPreview;
+        setStatus('takeStatus', '', '');
+      }
+    } catch (_) { /* 靜默失敗 */ }
+  }
+
+  /* ══ 登出 ══ */
+  function doLogout() {
+    session = { account: '', password: '', level: 'G' };
+    document.getElementById('account').value  = '';
+    document.getElementById('password').value = '';
+    setStatus('loginStatus', '', '');
+    showScreen('screenLogin');
+  }
+
+  /* Enter 鍵支援 */
+  document.addEventListener('keypress', e => {
+    if (e.key !== 'Enter') return;
+    const active = document.querySelector('.screen.active');
+    if (active.id === 'screenLogin') doLogin();
+    else if (active.id === 'screenTake') doTake();
+  });
+</script>
 </body>
 </html>
