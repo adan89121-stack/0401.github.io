@@ -13,7 +13,6 @@
       --border: #2a2d3a;
       --accent: #4f8ef7;
       --accent-dim: rgba(79,142,247,0.12);
-      --danger: #f75c5c;
       --success: #4fcf8e;
       --text: #e8eaf0;
       --muted: #5a5f7a;
@@ -32,7 +31,6 @@
       align-items: center;
       justify-content: center;
       padding: 1rem;
-      /* subtle grid texture */
       background-image:
         linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px);
@@ -64,6 +62,7 @@
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.1rem;
+      flex-shrink: 0;
     }
 
     .card-header h1 {
@@ -88,7 +87,7 @@
     .screen { display: none; }
     .screen.active { display: block; }
 
-    /* ── Inputs ── */
+    /* ── Fields ── */
     .field { margin-bottom: 1.2rem; }
 
     label {
@@ -101,7 +100,7 @@
       margin-bottom: 0.5rem;
     }
 
-    input {
+    input, textarea {
       width: 100%;
       background: var(--bg);
       border: 1px solid var(--border);
@@ -113,7 +112,14 @@
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    input:focus {
+    /* 備註欄：多行文字框 */
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+    }
+
+    input:focus, textarea:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(79,142,247,0.15);
@@ -137,11 +143,7 @@
     .btn:active { transform: scale(0.98); }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-
+    .btn-primary { background: var(--accent); color: #fff; }
     .btn-primary:hover:not(:disabled) { opacity: 0.88; }
 
     .btn-ghost {
@@ -150,10 +152,9 @@
       color: var(--muted);
       margin-top: 0.75rem;
     }
-
     .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 
-    /* ── Status bar ── */
+    /* ── Status ── */
     .status {
       min-height: 1.4rem;
       font-family: var(--mono);
@@ -163,7 +164,7 @@
       transition: color 0.3s;
     }
 
-    /* ── Number display panel ── */
+    /* ── Number panel ── */
     .num-panel {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -184,12 +185,13 @@
 
     .num-value {
       font-family: var(--mono);
-      font-size: 2.6rem;
       font-weight: 700;
       letter-spacing: 0.04em;
       line-height: 1;
     }
 
+    .num-value.large  { font-size: 2.6rem; }
+    .num-value.medium { font-size: 1.6rem; }
     .num-value.current { color: var(--muted); }
     .num-value.preview { color: var(--accent); }
     .num-value.issued  { color: var(--success); }
@@ -200,6 +202,7 @@
       margin: 1rem 0;
     }
 
+    /* ── Info rows ── */
     .info-row {
       display: flex;
       justify-content: space-between;
@@ -208,10 +211,19 @@
       color: var(--muted);
       margin-bottom: 0.4rem;
     }
-
     .info-row span:last-child { color: var(--text); }
 
-    /* ── Confirm badge ── */
+    /* 備註 info-row：右側允許換行 */
+    .info-row.remark-row {
+      align-items: flex-start;
+    }
+    .info-row.remark-row span:last-child {
+      max-width: 60%;
+      text-align: right;
+      word-break: break-all;
+    }
+
+    /* ── Badge ── */
     .issued-badge {
       display: inline-flex;
       align-items: center;
@@ -225,8 +237,24 @@
       color: var(--success);
       margin-top: 0.75rem;
     }
-
     .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+
+    /* ── 欄位說明 (Sheet 對照) ── */
+    .sheet-hint {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+    }
+    .col-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      letter-spacing: 0.06em;
+    }
   </style>
 </head>
 <body>
@@ -242,7 +270,9 @@
 
   <div class="card-body">
 
-    <!-- ══ 畫面 A：登入 ══ -->
+    <!-- ══════════════════════════════
+         畫面 A：登入
+    ══════════════════════════════ -->
     <div id="screenLogin" class="screen active">
       <div class="field">
         <label>帳號 Account</label>
@@ -256,16 +286,21 @@
       <div id="loginStatus" class="status"></div>
     </div>
 
-    <!-- ══ 畫面 B：取號 ══ -->
+    <!-- ══════════════════════════════
+         畫面 B：確認取號（含備註欄）
+    ══════════════════════════════ -->
     <div id="screenTake" class="screen">
+
+      <!-- 號碼預覽 -->
       <div class="num-panel">
         <div class="num-label">目前最新編號</div>
-        <div id="currentNum" class="num-value current">---</div>
+        <div id="currentNum" class="num-value large current">---</div>
         <hr class="num-divider">
         <div class="num-label">取號後將產生</div>
-        <div id="previewNum" class="num-value preview">---</div>
+        <div id="previewNum" class="num-value large preview">---</div>
       </div>
 
+      <!-- 登入資訊 -->
       <div class="info-row">
         <span>登入帳號</span>
         <span id="infoAccount">—</span>
@@ -275,23 +310,48 @@
         <span id="infoLevel">G</span>
       </div>
 
+      <!-- ★ 備註欄 -->
+      <div class="field" style="margin-top:1.2rem;">
+        <label>備註 Remark（選填）&nbsp;→ 寫入 Sheet C 欄</label>
+        <textarea id="remark" placeholder="可輸入文件名稱、用途或其他說明..."></textarea>
+      </div>
+
       <button class="btn btn-primary" id="takeBtn" onclick="doTake()">✦ 確認取號</button>
-      <button class="btn btn-ghost" id="logoutBtn" onclick="doLogout()">重新登入</button>
+      <button class="btn btn-ghost" onclick="doLogout()">重新登入</button>
 
       <div id="takeStatus" class="status"></div>
     </div>
 
-    <!-- ══ 畫面 C：取號成功 ══ -->
+    <!-- ══════════════════════════════
+         畫面 C：取號成功
+    ══════════════════════════════ -->
     <div id="screenDone" class="screen">
+
       <div class="num-panel">
         <div class="num-label">本次取得編號</div>
-        <div id="issuedNum" class="num-value issued">---</div>
+        <div id="issuedNum" class="num-value large issued">---</div>
         <div class="issued-badge"><div class="dot"></div>已寫入資料庫</div>
         <hr class="num-divider">
         <div class="num-label">上一筆編號</div>
-        <div id="lastNum" class="num-value current" style="font-size:1.4rem">---</div>
+        <div id="lastNum" class="num-value medium current">---</div>
       </div>
 
+      <!-- 寫入欄位對照提示 -->
+      <div class="sheet-hint">
+        <span class="col-tag">A 編號</span>
+        <span class="col-tag">B 承辦人</span>
+        <span class="col-tag">C 備註</span>
+        <span class="col-tag">D 取號時間</span>
+      </div>
+
+      <div class="info-row">
+        <span>承辦人</span>
+        <span id="infoDoneAccount">—</span>
+      </div>
+      <div class="info-row remark-row">
+        <span>備註</span>
+        <span id="infoDoneRemark">（無）</span>
+      </div>
       <div class="info-row">
         <span>取號時間</span>
         <span id="infoDoneTime">—</span>
@@ -306,18 +366,17 @@
 
 <script>
   // ★ 請貼上您的 GAS 部署網址 ★
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyphoe0I7PZ3pb8vkdhZEMh3Uumg5K1TqWk6ROzPaitRY-Pjkts-NoD2d6QwkG_qakr/exec';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxPuz9gwY0hQRIHxKzWWfwpXe-D3P220JPC1mQQJfrcEIzLGR60amsLydP-Gbgg0Cfs/exec';
 
-  // 儲存登入資訊
   let session = { account: '', password: '', level: 'G' };
 
-  /* ── 切換畫面 ── */
+  /* 切換畫面 */
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
-  /* ── 共用 POST ── */
+  /* 共用 POST */
   async function callGAS(payload) {
     const res = await fetch(GAS_URL, {
       method: 'POST',
@@ -327,7 +386,7 @@
     return res.json();
   }
 
-  /* ── 設定狀態文字 ── */
+  /* 狀態文字 */
   function setStatus(elId, msg, color) {
     const el = document.getElementById(elId);
     el.textContent = msg;
@@ -353,15 +412,14 @@
       const data = await callGAS({ account, password, action: 'login' });
 
       if (data.success) {
-        // 儲存 session
         session.account  = account;
         session.password = password;
 
-        // 填入取號畫面資料
         document.getElementById('currentNum').textContent  = data.currentCode || '---';
         document.getElementById('previewNum').textContent  = data.nextPreview  || '---';
         document.getElementById('infoAccount').textContent = account;
         document.getElementById('infoLevel').textContent   = session.level;
+        document.getElementById('remark').value = '';   // 清空備註
 
         setStatus('loginStatus', '', '');
         showScreen('screenTake');
@@ -376,8 +434,10 @@
     }
   }
 
-  /* ══ 取號 ══ */
+  /* ══ 取號（含備註）══ */
   async function doTake() {
+    const remark = document.getElementById('remark').value.trim();
+
     const btn = document.getElementById('takeBtn');
     btn.disabled = true;
     btn.textContent = '取號中...';
@@ -388,13 +448,17 @@
         account:  session.account,
         password: session.password,
         level:    session.level,
-        action:   'take'
+        action:   'take',
+        remark:   remark           // ★ 傳送備註
       });
 
       if (data.success) {
-        document.getElementById('issuedNum').textContent  = data.number;
-        document.getElementById('lastNum').textContent    = data.lastNumber;
-        document.getElementById('infoDoneTime').textContent =
+        // 填入成功畫面
+        document.getElementById('issuedNum').textContent     = data.number;
+        document.getElementById('lastNum').textContent       = data.lastNumber;
+        document.getElementById('infoDoneAccount').textContent = session.account;
+        document.getElementById('infoDoneRemark').textContent  = remark || '（無）';
+        document.getElementById('infoDoneTime').textContent  =
           new Date().toLocaleString('zh-TW', { hour12: false });
 
         setStatus('takeStatus', '', '');
@@ -410,9 +474,10 @@
     }
   }
 
-  /* ══ 繼續取號（回取號畫面，刷新預覽）══ */
+  /* ══ 繼續取號（刷新預覽）══ */
   async function doNewTake() {
     showScreen('screenTake');
+    document.getElementById('remark').value = '';
     setStatus('takeStatus', '刷新最新號碼中...', '#5a5f7a');
 
     try {
@@ -434,13 +499,15 @@
     session = { account: '', password: '', level: 'G' };
     document.getElementById('account').value  = '';
     document.getElementById('password').value = '';
+    document.getElementById('remark').value   = '';
     setStatus('loginStatus', '', '');
     showScreen('screenLogin');
   }
 
-  /* Enter 鍵支援 */
+  /* Enter 鍵支援（備註欄按 Enter 不觸發取號，讓使用者可以換行） */
   document.addEventListener('keypress', e => {
     if (e.key !== 'Enter') return;
+    if (e.target.id === 'remark') return;   // textarea 內不觸發
     const active = document.querySelector('.screen.active');
     if (active.id === 'screenLogin') doLogin();
     else if (active.id === 'screenTake') doTake();
