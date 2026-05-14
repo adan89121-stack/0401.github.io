@@ -173,7 +173,10 @@
 </div>
 
 <script>
-    // ★ 請在此替換為您的 GAS 部署網址 ★
+    // ==========================================
+    // ★ 請在下方引號中間貼上您的 GAS 部署網址 ★
+    // 注意：絕對不要刪掉頭尾的單引號！
+    // ==========================================
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbzAq6yLRogr75LpdYFDfIFY1mMStxwL99eug4AtYRuYJjo0wqxEYohYN-y3y1546II/exec';
 
     async function takeNumber() {
@@ -186,13 +189,12 @@
         const account = accField.value.trim();
         const password = pwdField.value.trim();
 
-        // 1. 簡易前端驗證
         if (!account || !password) {
             alert("請完整輸入帳號與密碼！");
             return;
         }
 
-        // 2. UI 狀態切換（防止重複送出）
+        // 按鈕切換為驗證中狀態，防止重複點擊
         btn.disabled = true;
         btn.innerText = "驗證中...";
         resultDiv.innerText = "....";
@@ -200,9 +202,11 @@
         statusMsg.style.color = "#7f8c8d";
 
         try {
-            // 3. 發送請求至 GAS
             const response = await fetch(GAS_URL, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8',
+                },
                 body: JSON.stringify({
                     account: account,
                     password: password
@@ -212,17 +216,35 @@
             const data = await response.json();
 
             if (data.success) {
-                // 4. 取號成功邏輯
+                // 取號成功
                 resultDiv.innerText = data.number;
                 statusMsg.innerText = "取號成功！已存入資料庫。";
                 statusMsg.style.color = "#27ae60";
-                pwdField.value = ""; // 安全起見，清空密碼框
+                pwdField.value = ""; // 清空密碼框
             } else {
-                // 5. 後端回傳失敗（例如密碼錯）
+                // 帳號密碼錯誤或其他後端錯誤
                 throw new Error(data.error);
             }
 
         } catch (error) {
             console.error(error);
             resultDiv.innerText = "FAIL";
-            status
+            statusMsg.innerText = "錯誤: " + error.message;
+            statusMsg.style.color = "#e74c3c";
+        } finally {
+            // 恢復按鈕狀態
+            btn.disabled = false;
+            btn.innerText = "執行取號";
+        }
+    }
+
+    // 支援按下 Enter 鍵直接執行
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            takeNumber();
+        }
+    });
+</script>
+
+</body>
+</html>
